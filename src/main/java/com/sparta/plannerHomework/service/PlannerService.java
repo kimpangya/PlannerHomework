@@ -63,9 +63,9 @@ public class PlannerService {
     }
 
     private Planner findPlanner(Long id) {
-        return plannerRepository.findById(id).orElseThrow(() ->
-                new IllegalArgumentException("선택한 메모는 존재하지 않습니다.")
-        );
+        return plannerRepository.findById(id);
+                /*요거 예외처리 어떻게 하는지 모르겠음....orElseThrow(() ->
+                new IllegalArgumentException("선택한 메모는 존재하지 않습니다."));*/
     }
 
     public List<PlannerResponseDto> getPlannersKeyword(String keyword) {
