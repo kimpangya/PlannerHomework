@@ -28,13 +28,15 @@ public class PlannerService {
         Planner savePlanner = plannerRepository.save(planner);
 
         // Entity -> ResponseDto
-
         return new PlannerResponseDto(savePlanner);
     }
 
     public List<PlannerResponseDto> getPlanners() {
         // DB 조회
-        return plannerRepository.findAllByOrderByModifiedAtDesc().stream().map(PlannerResponseDto::new).toList();
+        return plannerRepository.findAllByOrderByModifiedAtDesc()
+                .stream()
+                .map(PlannerResponseDto::new)
+                .toList();
     }
 
     public List<PlannerResponseDto> getPlannersByKeyword(String keyword) {
@@ -42,33 +44,34 @@ public class PlannerService {
     }
 
     @Transactional
-    public Long updatePlanner(Long id, PlannerRequestDto requestDto) {
+    public PlannerResponseDto updatePlanner(Long id, PlannerRequestDto requestDto) {
         // 해당 플랜이 DB에 존재하는지 확인
         Planner planner= findPlanner(id);
+        //비밀번호 일치할 때만
+        if(requestDto.getPassword().equals(planner.getPassword())){
+            // 플랜 내용 수정
+            planner.update(requestDto);
+        }
 
-        // 플랜 내용 수정
-        planner.update(requestDto);
-
-        return id;
+        return new PlannerResponseDto(planner);
     }
 
-    public Long deletePlanner(Long id) {
-        // 해당 메모가 DB에 존재하는지 확인
+
+    public Long deletePlanner(Long id, String password) {
+        // 해당 일정이 DB에 존재하는지 확인
         Planner planner = findPlanner(id);
 
-        // memo 삭제
-        plannerRepository.delelte(id);
-
+        if(password.equals(planner.getPassword())) {
+            //비밀번호 같아야 플래너 삭제
+            plannerRepository.delete(planner);
+        }
         return id;
     }
 
     private Planner findPlanner(Long id) {
-        return plannerRepository.findById(id);
-                /*요거 예외처리 어떻게 하는지 모르겠음....orElseThrow(() ->
-                new IllegalArgumentException("선택한 메모는 존재하지 않습니다."));*/
+        return plannerRepository.findById(id).orElseThrow(() ->
+                new IllegalArgumentException("선택한 일정은 존재하지 않습니다."));
     }
 
-    public List<PlannerResponseDto> getPlannersKeyword(String keyword) {
-        return null;
-    }
+
 }
